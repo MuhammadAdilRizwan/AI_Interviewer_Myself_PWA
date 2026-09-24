@@ -25,10 +25,17 @@ function PurchaseContent() {
   const requestedPlan = searchParams.get("plan") as keyof typeof plans | null;
   const [plan, setPlan] = useState<keyof typeof plans>(requestedPlan && requestedPlan in plans ? requestedPlan : "growth");
   const [processing, setProcessing] = useState(false);
+  const [cardNumber, setCardNumber] = useState("");
+  const [cardError, setCardError] = useState("");
   const selected = plans[plan];
 
   function handlePurchase(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (cardNumber.length !== 16) {
+      setCardError("Please enter exactly 16 digits.");
+      return;
+    }
+    setCardError("");
     setProcessing(true);
     window.setTimeout(() => {
       router.push("/overview?subscription=success");
@@ -50,7 +57,27 @@ function PurchaseContent() {
             <form onSubmit={handlePurchase} className="mt-8 space-y-5">
               <div><label htmlFor="name" className="text-sm font-semibold text-slate-700">Full name</label><input id="name" required className="input mt-2" placeholder="Adil Rizwan" /></div>
               <div><label htmlFor="email" className="text-sm font-semibold text-slate-700">Work email</label><input id="email" type="email" required className="input mt-2" placeholder="you@company.com" /></div>
-              <div><label htmlFor="card" className="text-sm font-semibold text-slate-700">Card details</label><input id="card" required inputMode="numeric" className="input mt-2" placeholder="4242 4242 4242 4242" /></div>
+              <div>
+                <label htmlFor="card" className="text-sm font-semibold text-slate-700">Card details</label>
+                <input
+                  id="card"
+                  required
+                  inputMode="numeric"
+                  autoComplete="cc-number"
+                  className="input mt-2 tracking-wider"
+                  placeholder="1234 5678 9012 3456"
+                  value={cardNumber.replace(/(\d{4})(?=\d)/g, "$1 ")}
+                  onChange={(event) => {
+                    const digits = event.target.value.replace(/\D/g, "").slice(0, 16);
+                    setCardNumber(digits);
+                    if (cardError) setCardError("");
+                  }}
+                  aria-describedby="card-help card-error"
+                  aria-invalid={Boolean(cardError)}
+                />
+                <p id="card-help" className="mt-2 text-xs text-slate-500">Enter 16 digits. Spaces are added automatically.</p>
+                {cardError && <p id="card-error" role="alert" className="mt-1 text-xs font-medium text-red-600">{cardError}</p>}
+              </div>
               <button type="submit" disabled={processing} className="w-full rounded-lg bg-[#1f6f68] px-5 py-3.5 text-sm font-semibold text-white shadow-sm hover:bg-[#185b55] disabled:cursor-wait disabled:opacity-70">{processing ? "Completing subscription..." : `Subscribe to ${selected.name} — $${selected.price}/month`}</button>
               <p className="text-center text-xs text-slate-500">Demo checkout for the frontend prototype. Connect Stripe or your payment provider before production.</p>
             </form>

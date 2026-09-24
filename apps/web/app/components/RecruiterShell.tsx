@@ -7,7 +7,7 @@ import type { ReactNode } from "react";
 export default function RecruiterShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const jobsActive = pathname === "/jobs" || pathname === "/jobs/new";
-  const candidatesActive = pathname.includes("/candidates");
+  const candidatesActive = pathname === "/candidates" || pathname.includes("/candidates");
   const overviewActive = pathname === "/overview";
 
   return (
@@ -25,7 +25,7 @@ export default function RecruiterShell({ children }: { children: ReactNode }) {
           <nav className="mt-10 space-y-1" aria-label="Main navigation">
             <NavItem label="Overview" href="/overview" active={overviewActive} />
             <NavItem label="Jobs" href="/jobs" active={jobsActive} />
-            <NavItem label="Candidates" href="/jobs" active={candidatesActive} />
+            <NavItem label="Candidates" href="/candidates" active={candidatesActive} />
             <NavItem label="Reports" />
           </nav>
 
