@@ -10,6 +10,7 @@ export default function DeviceCheckPage() {
   const params = useParams<{ token: string }>();
   const [status, setStatus] = useState<DeviceStatus>("idle");
   const [level, setLevel] = useState(0);
+  const [voiceDetected, setVoiceDetected] = useState(false);
   const streamRef = useRef<MediaStream | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const animationRef = useRef<number | null>(null);
@@ -29,9 +30,12 @@ export default function DeviceCheckPage() {
     }
 
     setStatus("checking");
+    setLevel(0);
+    setVoiceDetected(false);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current?.getTracks().forEach((track) => track.stop());
+      await audioContextRef.current?.close();
       streamRef.current = stream;
 
       const AudioContextClass =
@@ -44,16 +48,26 @@ export default function DeviceCheckPage() {
       }
       const audioContext = new AudioContextClass();
       audioContextRef.current = audioContext;
+      if (audioContext.state === "suspended") await audioContext.resume();
       const analyser = audioContext.createAnalyser();
-      analyser.fftSize = 256;
+      analyser.fftSize = 512;
+      analyser.smoothingTimeConstant = 0.8;
+      analyser.minDecibels = -90;
+      analyser.maxDecibels = -10;
       const source = audioContext.createMediaStreamSource(stream);
       source.connect(analyser);
       const data = new Uint8Array(analyser.frequencyBinCount);
 
       const updateLevel = () => {
         analyser.getByteTimeDomainData(data);
-        const average = data.reduce((sum, value) => sum + Math.abs(value - 128), 0) / data.length;
-        setLevel(Math.min(100, Math.round(average * 3)));
+        const rms = Math.sqrt(data.reduce((sum, value) => {
+          const normalized = (value - 128) / 128;
+          return sum + normalized * normalized;
+        }, 0) / data.length);
+        const decibels = 20 * Math.log10(Math.max(rms, 0.0001));
+        const normalizedLevel = Math.max(0, Math.min(100, Math.round(((decibels + 60) / 50) * 100)));
+        setLevel(normalizedLevel);
+        setVoiceDetected(normalizedLevel >= 12);
         animationRef.current = requestAnimationFrame(updateLevel);
       };
 
@@ -86,13 +100,15 @@ export default function DeviceCheckPage() {
           {ready && (
             <div className="mt-6 rounded-xl border border-[#cde4df] bg-[#eef7f5] p-4">
               <div className="flex items-center justify-between text-sm font-semibold text-[#1f6f68]">
-                <span>Microphone input detected</span>
+                <span>{voiceDetected ? "Voice detected" : "Microphone is ready"}</span>
                 <span>{level}%</span>
               </div>
               <div className="mt-3 h-2 overflow-hidden rounded-full bg-white">
                 <div className="h-full rounded-full bg-[#1f6f68] transition-[width]" style={{ width: `${Math.max(level, 4)}%` }} />
               </div>
-              <p className="mt-2 text-xs text-slate-600">Speak briefly to confirm the input meter responds.</p>
+              <p className="mt-2 text-xs text-slate-600">
+                {voiceDetected ? "Your voice is reaching the microphone." : "Speak briefly to confirm the input meter responds."}
+              </p>
             </div>
           )}
 

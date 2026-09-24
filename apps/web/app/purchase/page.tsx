@@ -75,7 +75,7 @@ function PurchaseContent() {
                   aria-describedby="card-help card-error"
                   aria-invalid={Boolean(cardError)}
                 />
-                <p id="card-help" className="mt-2 text-xs text-slate-500">Enter 16 digits. Spaces are added automatically.</p>
+                <p id="card-help" className="mt-2 text-xs text-slate-500">Enter 16 digits.</p>
                 {cardError && <p id="card-error" role="alert" className="mt-1 text-xs font-medium text-red-600">{cardError}</p>}
               </div>
               <button type="submit" disabled={processing} className="w-full rounded-lg bg-[#1f6f68] px-5 py-3.5 text-sm font-semibold text-white shadow-sm hover:bg-[#185b55] disabled:cursor-wait disabled:opacity-70">{processing ? "Completing subscription..." : `Subscribe to ${selected.name} — $${selected.price}/month`}</button>

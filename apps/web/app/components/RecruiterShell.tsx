@@ -8,6 +8,7 @@ export default function RecruiterShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const jobsActive = pathname === "/jobs" || pathname === "/jobs/new";
   const candidatesActive = pathname === "/candidates" || pathname.includes("/candidates");
+  const reportsActive = pathname.startsWith("/reports");
   const overviewActive = pathname === "/overview";
 
   return (
@@ -26,7 +27,7 @@ export default function RecruiterShell({ children }: { children: ReactNode }) {
             <NavItem label="Overview" href="/overview" active={overviewActive} />
             <NavItem label="Jobs" href="/jobs" active={jobsActive} />
             <NavItem label="Candidates" href="/candidates" active={candidatesActive} />
-            <NavItem label="Reports" />
+            <NavItem label="Reports" href="/reports" active={reportsActive} />
           </nav>
 
           <div className="mt-10 border-t border-slate-100 pt-6">
