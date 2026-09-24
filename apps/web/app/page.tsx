@@ -44,7 +44,7 @@ export default function Home() {
           <p className="mt-5 text-xs text-slate-500">No long implementation. Start with your first job in minutes.</p>
         </div>
         <div className="relative z-10 mt-14 grid max-w-4xl gap-4 sm:grid-cols-3">
-          {["84.6% completion rate", "3 languages supported", "Evidence in every report"].map((item) => <div key={item} className="rounded-xl border border-slate-200 bg-white/80 p-4 text-sm font-semibold text-slate-700 shadow-sm">{item}</div>)}
+          {["84.6% completion rate", "2 languages supported", "Evidence in every report"].map((item) => <div key={item} className="rounded-xl border border-slate-200 bg-white/80 p-4 text-sm font-semibold text-slate-700 shadow-sm">{item}</div>)}
         </div>
       </section>
 
